@@ -1,40 +1,64 @@
-import React, { useEffect, useState } from "react";
-import { ColorfulMsg } from "./components/ColorfulMsg";
+import React, { useState } from "react";
+import "./styles.css";
+import { InputTodo } from "./components/InputTodo";
+import { IncompleteArea } from "./components/IncompleteArea";
+import { CompleteArea } from "./components/CompleteArea";
 
-const App = () => {
-  const [num, setNum] = useState(0);
-  const [faceFlag, setFaceFlag] = useState(false);
+export const App = () => {
+  const [todoText, setTodoText] = useState("");
+  const [incompleteTodos, setIncompleteTodos] = useState([]);
+  const [completeTodos, setCompleteTodos] = useState([]);
 
-  const onClickCountUp = () => {
-    setNum(num + 1);
+  const onChangeTodoText = (event) => setTodoText(event.target.value);
+
+  const onClickAdd = () => {
+    if (todoText === "") return;
+    const newTodos = [...incompleteTodos, todoText];
+    setIncompleteTodos(newTodos);
+    setTodoText("");
   };
 
-  const onClickFaceFlag = () => {
-    setFaceFlag(!faceFlag);
+  const onClickDelete = (index) => {
+    const newTodos = [...incompleteTodos];
+    newTodos.splice(index, 1);
+    setIncompleteTodos(newTodos);
   };
 
-  useEffect(() => {
-    if (num > 0) {
-      if (num % 3 === 0) {
-        faceFlag || setFaceFlag(true);
-      } else {
-        faceFlag && setFaceFlag(false);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [num]);
+  const onClickComplete = (index) => {
+    const newImcompleteTodos = [...incompleteTodos];
+    newImcompleteTodos.splice(index, 1);
+    setIncompleteTodos(newImcompleteTodos);
+
+    const newCompleteTodos = [...completeTodos, incompleteTodos[index]];
+    setCompleteTodos(newCompleteTodos);
+  };
+
+  const onClickBack = (index) => {
+    const newCompleteTodos = [...completeTodos];
+    newCompleteTodos.splice(index, 1);
+    setCompleteTodos(newCompleteTodos);
+
+    const newIncompleteTodos = [...incompleteTodos, completeTodos[index]];
+    setIncompleteTodos(newIncompleteTodos);
+  };
 
   return (
     <>
-      <h1 style={{ color: "red" }}>Hello!</h1>
-      <ColorfulMsg color="blue">Are you ready?</ColorfulMsg>
-      <ColorfulMsg color="pink">Yes!</ColorfulMsg>
-      <button onClick={onClickCountUp}>Count up</button>
-      <p>{num}</p>
-      <button onClick={onClickFaceFlag}>On/Off</button>
-      {faceFlag && <p>orz</p>}
+      <InputTodo
+        todoText={todoText}
+        onChange={onChangeTodoText}
+        onClick={onClickAdd}
+        disabled={incompleteTodos.length >= 5}
+      />
+      {incompleteTodos.length >= 5 && (
+        <p style={{ color: "red" }}>登録できるTODOは5個までです</p>
+      )}
+      <IncompleteArea
+        incompleteTodos={incompleteTodos}
+        onClickComplete={onClickComplete}
+        onClickDelete={onClickDelete}
+      />
+      <CompleteArea completeTodos={completeTodos} onClickBack={onClickBack} />
     </>
   );
 };
-
-export default App;
